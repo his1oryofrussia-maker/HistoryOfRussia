@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>HistoryBot – История России в Telegram</title>
+  <style>
+    :root {
+      --bg: #05070a;
+      --panel: rgba(255,255,255,0.04);
+      --muted: #9aa6b2;
+      --accent: #ff006e;
+      --accent-alt: #4361ee;
+      --glass-radius: 14px;
+      --container: 1100px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* Сброс */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      color: #e8f0f8;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    /* Контейнер */
+    .container {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    /* Фон */
+    body {
+      background: linear-gradient(180deg, var(--bg) 0%, #07101a 100%) fixed;
+      background-size: 100% 100%;
+    }
+
+    /* HEADER */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      background: rgba(8,10,12,0.6);
+      backdrop-filter: blur(10px) saturate(140%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 6px 22px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.02);
+      transition: transform .22s ease, box-shadow .22s ease;
+    }
+    .logo:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .brand-text .title {
+      font-weight: 800;
+      font-size: 18px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .brand-text .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .nav {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .nav-link {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all .18s ease;
+    }
+    .nav-link:hover {
+      background: rgba(255,60,60,0.08);
+      color: var(--accent);
+    }
+
+    .header-actions .cta {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,60,60,0.3);
+      background: linear-gradient(90deg, rgba(255,60,60,0.1), rgba(67,97,238,0.08));
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: all .2s ease;
+    }
+    .header-actions .cta:hover {
+      background: linear-gradient(90deg, rgba(255,60,60,0.2), rgba(67,97,238,0.15));
+      box-shadow: 0 6px 26px rgba(255,60,60,0.15);
+    }
+
+    /* HERO */
+    .hero {
+      padding: 56px 0 28px;
+    }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 32px;
+      align-items: center;
+    }
+    .hero-left h1 {
+      font-size: 40px;
+      line-height: 1.02;
+      margin-bottom: 10px;
+    }
+    .hero-left .accent {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+    }
+    .lead {
+      color: var(--muted);
+      max-width: 680px;
+      margin-bottom: 18px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 0;
+      transition: all .2s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, var(--accent), #ff3d6b);
+      color: #fff;
+      box-shadow: 0 8px 30px rgba(255,60,60,0.2);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(255,60,60,0.3);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.02);
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .btn-ghost:hover {
+      background: rgba(67,97,238,0.08);
+      color: var(--accent-alt);
+      border-color: rgba(67,97,238,0.2);
+    }
+
+    .hero-card {
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(135deg, rgba(255,0,110,0.06) 0%, rgba(67,97,238,0.06) 100%);
+      border: 1px solid rgba(67,97,238,0.15);
+      backdrop-filter: blur(14px) saturate(130%);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      padding: 22px;
+    }
+    .hero-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: var(--accent);
+    }
+    .hero-card p {
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    /* THEMES */
+    .section {
+      padding: 48px 0;
+    }
+    .section h2 {
+      font-size: 22px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .small-muted {
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .themes-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .theme-card {
+      padding: 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,0,110,0.04) 0%, rgba(67,97,238,0.04) 100%);
+      border: 1px solid rgba(67,97,238,0.1);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.55);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+      cursor: pointer;
+    }
+    .theme-card:hover {
+      transform: translateY(-4px);
+      background: linear-gradient(135deg, rgba(255,0,110,0.08) 0%, rgba(67,97,238,0.08) 100%);
+      border-color: rgba(67,97,238,0.2);
+      box-shadow: 0 15px 50px rgba(67,97,238,0.12);
+    }
+    .theme-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+    .theme-card h3 {
+      margin-bottom: 6px;
+      color: #fff;
+    }
+    .theme-card p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* GALLERY */
+    .gallery-horizontal {
+      display: flex;
+      gap: 18px;
+      overflow-x: auto;
+      cursor: grab;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+    }
+    .gallery-horizontal.grabbing {
+      cursor: grabbing;
+    }
+    .media-card {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 360px;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      scroll-snap-align: start;
+      user-select: none;
+      border: 1px solid rgba(67,97,238,0.15);
+    }
+
+    /* COMMUNITY */
+    .community-row {
+      display: flex;
+      gap: 18px;
+      margin-top: 16px;
+      flex-direction: column;
+    }
+    .community-card {
+      flex: 1;
+      padding: 18px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255,0,110,0.04) 0%, rgba(67,97,238,0.04) 100%);
+      border: 1px solid rgba(67,97,238,0.1);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.55);
+      transition: all .2s ease;
+    }
+    .community-card:hover {
+      background: linear-gradient(135deg, rgba(255,0,110,0.08) 0%, rgba(67,97,238,0.08) 100%);
+      border-color: rgba(67,97,238,0.2);
+    }
+    .community-card h4 {
+      margin: 0 0 8px;
+      color: var(--accent);
+    }
+    .community-card a {
+      color: var(--accent-alt);
+      text-decoration: none;
+      transition: color .2s ease;
+    }
+    .community-card a:hover {
+      color: var(--accent);
+    }
+
+    @media (min-width: 768px) {
+      .community-row {
+        flex-direction: row;
+      }
+    }
+
+    /* FOOTER */
+    .site-footer {
+      padding: 20px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      color: var(--muted);
+    }
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .foot-links a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s ease;
+    }
+    .foot-links a:hover {
+      color: var(--accent);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1100px) {
+      .hero-inner { grid-template-columns: 1fr 360px; gap: 24px; }
+      .themes-grid { gap: 16px; }
+    }
+    @media (max-width: 800px) {
+      .header-inner { flex-direction: row; gap: 10px; }
+      .nav { display: none; }
+      .hero-inner { grid-template-columns: 1fr; gap: 20px; }
+      .hero-left h1 { font-size: 28px; }
+      .hero-card { order: 2; }
+    }
+    @media (max-width: 420px) {
+      .container { padding: 18px; }
+      .logo { width: 40px; height: 40px; }
+      .hero-left h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo" style="display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 8px; background: linear-gradient(135deg, #ff006e 0%, #4361ee 100%); font-weight: 800; font-size: 24px; color: white;">📚</div>
+        <div class="brand-text">
+          <div class="title">HistoryBot</div>
+          <div class="subtitle">История России</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="nav-link" href="#concept">О проекте</a>
+        <a class="nav-link" href="#themes">Разделы</a>
+        <a class="nav-link" href="#gallery">Галерея</a>
+        <a class="nav-link" href="#community">Контакты</a>
+      </nav>
+      <div class="header-actions">
+        <button class="cta" onclick="openBot()">Открыть Telegram</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="container hero-inner">
+        <div class="hero-left">
+          <h1>Погружайся в <span class="accent">историю</span> России</h1>
+          <p class="lead">Исследуй события, личностей и технику. Получай рекомендации, сохраняй заметки и прокачивай свой уровень знаний в удобном режиме прямо в Telegram.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="openBot()">🚀 Начать сейчас</button>
+            <a class="btn btn-ghost" href="#concept">Узнать больше</a>
+          </div>
+        </div>
+        <div class="hero-right">
+          <figure class="hero-card">
+            <div class="card-content">
+              <h3>📚 500+ статей</h3>
+              <p>Структурированный контент по истории, технике и выдающимся личностям.</p>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCEPT -->
+    <section id="concept" class="section section-concept container">
+      <h2>О проекте</h2>
+      <p class="concept-lead" style="color: var(--muted); margin-top: 12px;">HistoryBot — это инновационный бот в Telegram для изучения истории России. Мы делаем историю доступной, интерактивной и увлекательной через систему уровней, личные заметки и умные рекомендации.</p>
+    </section>
+
+    <!-- THEMES -->
+    <section id="themes" class="section section-themes">
+      <div class="container">
+        <h2>Исследуй разделы</h2>
+        <p class="small-muted">Каждый раздел раскрывает свою суть одним взглядом</p>
+        <div class="themes-grid">
+          <article class="theme-card">
+            <div class="theme-icon">📅</div>
+            <h3>Хронология</h3>
+            <p>Главные события истории России в хронологическом порядке.</p>
+          </article>
+          <article class="theme-card">
+            <div class="theme-icon">👑</div>
+            <h3>Личности</h3>
+            <p>Выдающиеся люди, чьи решения и поступки изменили ход истории.</p>
+          </article>
+          <article class="theme-card">
+            <div class="theme-icon">⚔️</div>
+            <h3>Сражения</h3>
+            <p>Знаковые битвы и военные кампании, определившие судьбу страны.</p>
+          </article>
+          <article class="theme-card">
+            <div class="theme-icon">🎖️</div>
+            <h3>Награды</h3>
+            <p>Знаки отличия и ордена, отражающие подвиги и заслуги людей.</p>
+          </article>
+          <article class="theme-card">
+            <div class="theme-icon">🛰️</div>
+            <h3>Техника</h3>
+            <p>Важные изобретения, инженерные достижения и военная техника.</p>
+          </article>
+          <article class="theme-card">
+            <div class="theme-icon">🏛️</div>
+            <h3>Реформы</h3>
+            <p>Государственные преобразования, которые меняли страну.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="gallery" class="section section-gallery">
+      <div class="container">
+        <h2>Галерея</h2>
+        <p class="small-muted">Исторические снимки и портреты</p>
+        <div class="gallery-horizontal" id="gallery-scroll">
+          <div class="media-card" style="background-image: url('https://picsum.photos/id/1015/360/640')"></div>
+          <div class="media-card" style="background-image: url('https://picsum.photos/id/1016/360/640')"></div>
+          <div class="media-card" style="background-image: url('https://picsum.photos/id/1025/360/640')"></div>
+          <div class="media-card" style="background-image: url('https://picsum.photos/id/1035/360/640')"></div>
+          <div class="media-card" style="background-image: url('https://picsum.photos/id/1045/360/640')"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMUNITY -->
+    <section id="community" class="section section-community">
+      <div class="container">
+        <h2>Свяжись с нами</h2>
+        <p class="concept-lead" style="color: var(--muted); margin-top: 12px;">Вопросы или предложения? Свяжитесь с нами в Telegram или Gmail.</p>
+        <div class="community-row">
+          <div class="community-card">
+            <h4>📱 Telegram</h4>
+            <p>
+              <a href="https://t.me/bot" target="_blank" rel="noopener">
+                t.me/bot
+              </a>
+            </p>
+          </div>
+          <div class="community-card">
+            <h4>📬 Email</h4>
+            <p>
+              <a href="mailto:support@example.com" target="_blank" rel="noopener">
+                support@example.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-row">
+        <div>© HistoryBot — 2025</div>
+        <div class="foot-links"><a href="#community">Контакты</a> · <a href="#concept">О проекте</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function openBot() {
+      window.open('https://t.me/bot', '_blank');
+    }
+
+    // Gallery swipe support
+    const gallery = document.getElementById('gallery-scroll');
+    if (gallery) {
+      let isDown = false;
+      let startX;
+      let scrollLeft;
+
+      gallery.addEventListener('mousedown', (e) => {
+        isDown = true;
+        gallery.classList.add('grabbing');
+        startX = e.pageX - gallery.offsetLeft;
+        scrollLeft = gallery.scrollLeft;
+      });
+
+      gallery.addEventListener('mouseleave', () => {
+        isDown = false;
+        gallery.classList.remove('grabbing');
+      });
+
+      gallery.addEventListener('mouseup', () => {
+        isDown = false;
+        gallery.classList.remove('grabbing');
+      });
+
+      gallery.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - gallery.offsetLeft;
+        const walk = (x - startX);
+        gallery.scrollLeft = scrollLeft - walk;
+      });
+    }
+
+    // Smooth scroll for navigation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href !== '#' && document.querySelector(href)) {
+          e.preventDefault();
+          document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
